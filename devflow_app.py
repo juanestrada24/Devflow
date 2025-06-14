@@ -103,4 +103,3 @@ if submitted:
 
     st.success("✅ Análisis generado con éxito.")
     st.info("En próximas versiones podrás compartir este análisis con aliados o exportar como PDF.")
-```
