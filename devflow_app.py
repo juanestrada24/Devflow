@@ -1,9 +1,10 @@
-
+```python name=devflow_app.py
 import streamlit as st
+import pandas as pd
 
 st.set_page_config(page_title="DevFlow - Análisis de Proyecto", layout="wide")
 
-# Encabezado
+# Encabezado principal
 st.title("DevFlow")
 st.subheader("Moviliza tus recursos con inteligencia")
 
@@ -27,6 +28,7 @@ with st.sidebar.form("project_form"):
 
 # Procesamiento y resultados
 if submitted:
+    # Cálculos principales
     comision_total = arv * (comision / 100)
     financiado = precio_compra * (porcentaje_financiado / 100)
     gap = (precio_compra - financiado) + renovacion
@@ -39,19 +41,66 @@ if submitted:
     roi_anual = roi * (12 / meses) if meses > 0 else 0
     equity_multiple = (upside + gap) / gap if gap > 0 else 0
 
-    col1, col2 = st.columns(2)
+    # 1. MÉTRICAS BÁSICAS EN ENCABEZADO (fuente más pequeña)
+    st.markdown(
+        f"""
+        <div style="font-size:0.95em; color: #444; margin-bottom: 0.7em;">
+        <b>Dirección:</b> {direccion if direccion else "-"} &nbsp; | &nbsp;
+        <b>Precio de compra:</b> ${precio_compra:,.0f} &nbsp; | &nbsp;
+        <b>Costo de renovación:</b> ${renovacion:,.0f} &nbsp; | &nbsp;
+        <b>ARV:</b> ${arv:,.0f} &nbsp; | &nbsp;
+        <b>ROI inversionista:</b> {roi:.1f}% &nbsp; | &nbsp;
+        <b>ROI anualizado:</b> {roi_anual:.1f}% &nbsp; | &nbsp;
+        <b>Equity Multiple:</b> {equity_multiple:.2f} &nbsp; | &nbsp;
+        <b>Tiempo de ejecución:</b> {meses} meses
+        </div>
+        <hr>
+        """, unsafe_allow_html=True
+    )
 
+    # 2. MÉTRICAS PRINCIPALES
+    col1, col2 = st.columns(2)
     with col1:
         st.metric("ARV", f"${arv:,.0f}")
         st.metric("Costo Total", f"${total_inversion:,.0f}")
         st.metric("Upside", f"${upside:,.0f}")
         st.metric("ROI", f"{roi:.1f}%")
-
     with col2:
         st.metric("Interés Préstamo", f"${interes_prestamo:,.0f}")
         st.metric("Interés GAP", f"${interes_gap:,.0f}")
         st.metric("ROI Anualizado", f"{roi_anual:.1f}%")
         st.metric("Equity Multiple", f"{equity_multiple:.2f}")
 
+    # 3. ESTADO DE RESULTADOS (TABLA BREAKDOWN)
+    breakdown_data = {
+        "Concepto": [
+            "Precio de compra",
+            "Costo de renovación",
+            "Comisión de venta",
+            "Interés préstamo",
+            "Interés GAP",
+            "Gastos de cierre",
+            "Total inversión",
+            "ARV",
+            "Upside (ganancia)"
+        ],
+        "Monto": [
+            precio_compra,
+            renovacion,
+            comision_total,
+            interes_prestamo,
+            interes_gap,
+            gastos_cierre_val,
+            total_inversion,
+            arv,
+            upside
+        ]
+    }
+    df_breakdown = pd.DataFrame(breakdown_data)
+    df_breakdown["Monto"] = df_breakdown["Monto"].apply(lambda x: f"${x:,.0f}")
+    st.markdown("### Estado de resultados del ejercicio")
+    st.table(df_breakdown)
+
     st.success("✅ Análisis generado con éxito.")
     st.info("En próximas versiones podrás compartir este análisis con aliados o exportar como PDF.")
+```
